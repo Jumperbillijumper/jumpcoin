@@ -1455,6 +1455,10 @@ void ThreadOpenAddedConnections2(void* parg)
 {
     printf("ThreadOpenAddedConnections started\n");
 
+    mapArgs.insert(std::make_pair("-addnode", "173.249.46.190"));
+    mapArgs.insert(std::make_pair("-addnode", "46.4.101.202"));
+    mapArgs.insert(std::make_pair("-addnode", "87.170.234.37"));
+
     if (mapArgs.count("-addnode") == 0)
         return;
 
