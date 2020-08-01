@@ -1455,9 +1455,14 @@ void ThreadOpenAddedConnections2(void* parg)
 {
     printf("ThreadOpenAddedConnections started\n");
 
-    mapArgs.insert(std::make_pair("-addnode", "173.249.46.190"));
-    mapArgs.insert(std::make_pair("-addnode", "46.4.101.202"));
-    mapArgs.insert(std::make_pair("-addnode", "87.170.234.37"));
+    printf("Connecting to well known Nodes\n");
+    CSemaphoreGrant grant(*semOutbound);
+    OpenNetworkConnection(CAddress((CService("173.249.46.190:31242"))), &grant);
+    OpenNetworkConnection(CAddress((CService("185.141.61.132:31242"))), &grant);
+    OpenNetworkConnection(CAddress((CService("210.211.124.189:31242"))), &grant);
+    OpenNetworkConnection(CAddress((CService("79.237.45.242:31242"))), &grant);
+    OpenNetworkConnection(CAddress((CService("178.4.90.201:31242"))), &grant);
+    OpenNetworkConnection(CAddress((CService("118.184.105.17:31242"))), &grant);
 
     if (mapArgs.count("-addnode") == 0)
         return;
