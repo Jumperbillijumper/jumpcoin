@@ -1063,7 +1063,6 @@ const boost::filesystem::path &GetDataDir(bool fNetSpecific)
     }
     if (fNetSpecific && fTestNet)
         path /= "testnet";
-
     fs::create_directory(path);
 
     cachedPath[fNetSpecific]=true;
@@ -1077,9 +1076,36 @@ boost::filesystem::path GetConfigFile()
     return pathConfigFile;
 }
 
+string random(int len)
+{
+    string a = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    string r;
+    srand(time(NULL));
+    for(int i = 0; i < len; i++) r.push_back(a.at(size_t(rand() % 62)));
+    return r;
+}
+
 void ReadConfigFile(map<string, string>& mapSettingsRet,
                     map<string, vector<string> >& mapMultiSettingsRet)
 {
+    boost::filesystem::ifstream streamConfigCheck(GetConfigFile());
+    if (!streamConfigCheck.good())
+    {
+        // Open the new config file
+        boost::filesystem::ofstream pathConfigFile(GetConfigFile());
+
+        // Construct the new config file
+        std::string configLine = "rpcport=31240\naddnode=seed1.jumpcoin.net\naddnode=seed2.jumpcoin.net\naddnode=seed3.jumpcoin.net\naddnode=seed4.jumpcoin.net\naddnode=seed5.jumpcoin.net\naddnode=seed6.jumpcoin.net\nstaking=1\nlisten=1\nserver=1\ndaemon=1\nrpcuser=";
+        configLine += random(8);
+        configLine += "\nrpcpassword=";
+        configLine += random(16);
+
+        // Write the new config file
+        pathConfigFile << configLine;
+        pathConfigFile.flush();
+        pathConfigFile.close();
+    }
+
     boost::filesystem::ifstream streamConfig(GetConfigFile());
     if (!streamConfig.good())
         return; // No jumpcoin.conf file is OK
@@ -1141,6 +1167,15 @@ void FileCommit(FILE *fileout)
 #endif
 }
 
+int GetFilesize(FILE* file)
+{
+    int nSavePos = ftell(file);
+    int nFilesize = -1;
+    if (fseek(file, 0, SEEK_END) == 0)
+        nFilesize = ftell(file);
+    fseek(file, nSavePos, SEEK_SET);
+    return nFilesize;
+}
 void ShrinkDebugFile()
 {
     // Scroll debug.log if it's getting too big
