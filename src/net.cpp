@@ -1455,6 +1455,15 @@ void ThreadOpenAddedConnections2(void* parg)
 {
     printf("ThreadOpenAddedConnections started\n");
 
+    printf("Connecting to well known Nodes\n");
+    CSemaphoreGrant grant(*semOutbound);
+    OpenNetworkConnection(CAddress((CService("seed1.jumpcoin.net"))), &grant);
+    OpenNetworkConnection(CAddress((CService("seed2.jumpcoin.net"))), &grant);
+    OpenNetworkConnection(CAddress((CService("seed3.jumpcoin.net"))), &grant);
+    OpenNetworkConnection(CAddress((CService("seed4.jumpcoin.net"))), &grant);
+    OpenNetworkConnection(CAddress((CService("seed5.jumpcoin.net"))), &grant);
+    OpenNetworkConnection(CAddress((CService("seed6.jumpcoin.net"))), &grant);
+
     if (mapArgs.count("-addnode") == 0)
         return;
 
