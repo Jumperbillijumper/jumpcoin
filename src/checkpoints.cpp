@@ -348,7 +348,7 @@ namespace Checkpoints
 }
 
 // jumpcoin: sync-checkpoint master key
-const std::string CSyncCheckpoint::strMasterPubKey = "049F2C10997604217E7238A4C5CF2843570ADA001D1A247B228A7C5583ACD0F762A3130D0C4331EB262E3D0EB516AE6F7B0B1ADA43275013F8552A83A7C621B1D9";
+const std::string CSyncCheckpoint::strMasterPubKey = "0330efa40cceb0fea7e1c62dd907576526ff7f8dd4f7fb18553f0a88043792bdea";
 
 std::string CSyncCheckpoint::strMasterPrivKey = "";
 
