@@ -1,3 +1,5 @@
+OLD Jumpcoin version. Not in use anymore since 01.02.2024.
+
 # jumpcoin
 Community Cryptocurrency from Jumperbillijumper on YouTube
 
