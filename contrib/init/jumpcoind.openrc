@@ -1,0 +1,93 @@
+#!/sbin/openrc-run
+
+# backward compatibility for existing gentoo layout 
+#
+if [ -d "/var/lib/jumpcoin/.jumpcoin" ]; then
+	JUMPCOIND_DEFAULT_DATADIR="/var/lib/jumpcoin/.jumpcoin"
+else
+	JUMPCOIND_DEFAULT_DATADIR="/var/lib/jumpcoind"
+fi
+
+JUMPCOIND_CONFIGFILE=${JUMPCOIND_CONFIGFILE:-/etc/jumpcoin/jumpcoin.conf}
+JUMPCOIND_PIDDIR=${JUMPCOIND_PIDDIR:-/var/run/jumpcoind}
+JUMPCOIND_PIDFILE=${JUMPCOIND_PIDFILE:-${JUMPCOIND_PIDDIR}/jumpcoind.pid}
+JUMPCOIND_DATADIR=${JUMPCOIND_DATADIR:-${JUMPCOIND_DEFAULT_DATADIR}}
+JUMPCOIND_USER=${JUMPCOIND_USER:-${BITCOIN_USER:-jumpcoin}}
+JUMPCOIND_GROUP=${JUMPCOIND_GROUP:-jumpcoin}
+JUMPCOIND_BIN=${JUMPCOIND_BIN:-/usr/bin/jumpcoind}
+JUMPCOIND_NICE=${JUMPCOIND_NICE:-${NICELEVEL:-0}}
+JUMPCOIND_OPTS="${JUMPCOIND_OPTS:-${BITCOIN_OPTS}}"
+
+name="Jumpcoin Daemon"
+description="Jumpcoin cryptocurrency P2P network daemon"
+
+command="/usr/bin/jumpcoind"
+command_args="-pid=\"${JUMPCOIND_PIDFILE}\" \
+		-conf=\"${JUMPCOIND_CONFIGFILE}\" \
+		-datadir=\"${JUMPCOIND_DATADIR}\" \
+		-daemon \
+		${JUMPCOIND_OPTS}"
+
+required_files="${JUMPCOIND_CONFIGFILE}"
+start_stop_daemon_args="-u ${JUMPCOIND_USER} \
+			-N ${JUMPCOIND_NICE} -w 2000"
+pidfile="${JUMPCOIND_PIDFILE}"
+
+# The retry schedule to use when stopping the daemon. Could be either
+# a timeout in seconds or multiple signal/timeout pairs (like
+# "SIGKILL/180 SIGTERM/300")
+retry="${JUMPCOIND_SIGTERM_TIMEOUT}"
+
+depend() {
+	need localmount net
+}
+
+# verify
+# 1) that the datadir exists and is writable (or create it)
+# 2) that a directory for the pid exists and is writable
+# 3) ownership and permissions on the config file
+start_pre() {
+	checkpath \
+	-d \
+	--mode 0750 \
+	--owner "${JUMPCOIND_USER}:${JUMPCOIND_GROUP}" \
+	"${JUMPCOIND_DATADIR}"
+
+	checkpath \
+	-d \
+	--mode 0755 \
+	--owner "${JUMPCOIND_USER}:${JUMPCOIND_GROUP}" \
+	"${JUMPCOIND_PIDDIR}"
+
+	checkpath -f \
+	-o "${JUMPCOIND_USER}:${JUMPCOIND_GROUP}" \
+	-m 0660 \
+	"${JUMPCOIND_CONFIGFILE}"
+
+	checkconfig || return 1
+}
+
+checkconfig()
+{
+	if grep -qs '^rpcuser=' "${JUMPCOIND_CONFIGFILE}" && \
+		! grep -qs '^rpcpassword=' "${JUMPCOIND_CONFIGFILE}" ; then
+		eerror ""
+		eerror "ERROR: You must set a secure rpcpassword to run jumpcoind."
+		eerror "The setting must appear in ${JUMPCOIND_CONFIGFILE}"
+		eerror ""
+		eerror "This password is security critical to securing wallets "
+		eerror "and must not be the same as the rpcuser setting."
+		eerror "You can generate a suitable random password using the following "
+		eerror "command from the shell:"
+		eerror ""
+		eerror "bash -c 'tr -dc a-zA-Z0-9 < /dev/urandom | head -c32 && echo'"
+		eerror ""
+		eerror "It is recommended that you also set alertnotify so you are "
+		eerror "notified of problems:"
+		eerror ""
+		eerror "ie: alertnotify=echo %%s | mail -s \"Jumpcoin Alert\"" \
+			"team@jumpcoin.net"
+		eerror ""
+		return 1
+	fi
+}

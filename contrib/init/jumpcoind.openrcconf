@@ -1,0 +1,33 @@
+# /etc/conf.d/jumpcoind: config file for /etc/init.d/jumpcoind
+
+# Config file location
+#JUMPCOIND_CONFIGFILE="/etc/jumpcoin/jumpcoin.conf"
+
+# What directory to write pidfile to?  (created and owned by $JUMPCOIND_USER)
+#JUMPCOIND_PIDDIR="/var/run/jumpcoind"
+
+# What filename to give the pidfile
+#JUMPCOIND_PIDFILE="${JUMPCOIND_PIDDIR}/jumpcoind.pid"
+
+# Where to write jumpcoind data (be mindful that the blockchain is large)
+#JUMPCOIND_DATADIR="/var/lib/jumpcoind"
+
+# User and group to own jumpcoind process
+#JUMPCOIND_USER="jumpcoin"
+#JUMPCOIND_GROUP="jumpcoin"
+
+# Path to jumpcoind executable
+#JUMPCOIND_BIN="/usr/bin/jumpcoind"
+
+# Nice value to run jumpcoind under
+#JUMPCOIND_NICE=0
+
+# Additional options (avoid -conf and -datadir, use flags above)
+#JUMPCOIND_OPTS=""
+
+# The timeout in seconds OpenRC will wait for jumpcoind to terminate
+# after a SIGTERM has been raised.
+# Note that this will be mapped as argument to start-stop-daemon's
+# '--retry' option, which means you can specify a retry schedule
+# here. For more information see man 8 start-stop-daemon.
+JUMPCOIND_SIGTERM_TIMEOUT=600

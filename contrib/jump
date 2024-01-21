@@ -1,0 +1,50 @@
+#!/bin/bash
+
+usage="Usage: jump [ info | stake | latest | dust ] \n \n
+	info: Check basic info. \n
+	stake: Enables staking; Passes password without storing it in memory. \n
+	latest: Compares latest block with the JumpcoinNL hosted block explorer. \n
+	dust: Prunes dust from wallet. Dust is defined as less than .0001JUMP. Requires jq. \n"
+
+jumpc='/usr/local/bin/jumpcoin-cli -datadir=/var/lib/.jumpcoin/'
+
+case $1 in
+
+info )
+	$jumpc getwalletinfo | egrep "balance|staked_balance|txcount|unconfirmed_balance|immature_balance|total_balance";
+	$jumpc getnetworkinfo | egrep "subversion|connections";
+	$jumpc getinfo | egrep "blocks";
+	$jumpc getblockchaininfo | egrep "best";
+	$jumpc getstakinginfo | egrep "enabled|staking|netstakeweight|expectedtime";
+;;	
+
+stake )
+	echo 'enter Jumpcoin Password'
+	read -s JUMPPW
+	$jumpc walletpassphrase $JUMPPW 99999999 true
+	JUMPPW=null
+;;
+
+latest )
+	latest=$($jumpc  getblockcount) && \
+	    blacksight=$(curl -s https://node.jumpcoin.io/insight-api/block-index/$latest? |  cut -d '"' -f4) && \
+	    jumpcoin=$($jumpc  getblockhash $latest) && \
+	    diff -sy --label Local <(echo $jumpcoin) --label Explorer <(echo $blacksight)
+;;
+
+dust )
+	IFS=$'\n';
+
+	 /usr/local/bin/jumpcoin-cli -datadir=/var/lib/.jumpcoin/ listtransactions "*" 99999 | jq -r '.[] | select(.category != "send") | select(.amount < .0001) | .txid' | uniq >txid.txt
+
+	while read line; do
+	        echo $line 
+	        /usr/local/bin/jumpcoin-cli -datadir=/var/lib/.jumpcoin/ removeprunedfunds $(echo $line)
+	done < "txid.txt"
+;;
+
+*)
+    echo -e $usage
+;;	
+
+esac
